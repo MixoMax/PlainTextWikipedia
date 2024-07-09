@@ -3,13 +3,14 @@ import json
 import re
 from html2text import html2text as htt
 import wikitextparser as wtp
+from tqdm import tqdm
 
 
 def dewiki(text):
     text = wtp.parse(text).plain_text()  # wiki to plaintext 
     text = htt(text)  # remove any HTML
     text = text.replace('\\n',' ')  # replace newlines
-    text = re.sub('\s+', ' ', text)  # replace excess whitespace
+    text = text.strip()  # remove leading/trailing whitespace
     return text
 
 
@@ -36,7 +37,6 @@ def analyze_chunk(text):
 def save_article(article, savedir):
     doc = analyze_chunk(article)
     if doc:
-        print('SAVING:', doc['title'])
         filename = doc['id'] + '.json'
         with open(savedir + filename, 'w', encoding='utf-8') as outfile:
             json.dump(doc, outfile, sort_keys=True, indent=1, ensure_ascii=False)
@@ -45,10 +45,10 @@ def save_article(article, savedir):
 def process_file_text(filename, savedir):
     article = ''
     with open(filename, 'r', encoding='utf-8') as infile:
-        for line in infile:
+        for line in tqdm(infile):
             if '<page>' in line:
                 article = ''
             elif '</page>' in line:  # end of article
                 Thread(target=save_article, args=(article, savedir)).start()
             else:
-                article += line                
+                article += line
