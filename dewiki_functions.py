@@ -4,6 +4,8 @@ import time
 import datetime
 from html2text import html2text as htt
 import wikitextparser as wtp
+import jsonlines
+import os
 
 
 def dewiki(text):
@@ -40,11 +42,26 @@ def save_article(article, savedir):
         filename = doc['id'] + '.json'
         with open(savedir + filename, 'w', encoding='utf-8') as outfile:
             json.dump(doc, outfile, sort_keys=True, indent=1, ensure_ascii=False)
+        add_article_to_metadata(doc, savedir)
+
+def add_article_to_metadata(doc, savedir):
+    
+    if doc:
+        metadata_file = savedir + '_metadata.jsonl'
+        with jsonlines.open(metadata_file, mode='a') as writer:
+            writer.write({'id': doc['id'], 'title': doc['title']})
+        return True
+    return False
 
 
 
 estimated_n_articles = 6_843_803
 def process_file_text(filename, savedir):
+
+    if not os.path.exists(savedir):
+        os.makedirs(savedir)
+    
+
     article_lines = []
     with open(filename, 'r', encoding='utf-8') as infile:
         
@@ -75,3 +92,9 @@ def process_file_text(filename, savedir):
 
             else:
                 article_lines.append(line)
+
+
+wiki_xml_file = "./enwiki-latest-pages-articles-multistream.xml"
+json_save_dir = "./jsons/"
+
+process_file_text(wiki_xml_file, json_save_dir)
