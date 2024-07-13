@@ -79,11 +79,16 @@ def process_file_text(filename, savedir):
 
                 n_rolling_avg = 100
                 if n_articles_processed > n_rolling_avg and n_articles_processed % 100 == 0:
+
+                    # calculate the ETA
                     last_10 = timestamps[-n_rolling_avg:]
                     avg_time = (last_10[-1] - last_10[0]) / n_rolling_avg
                     time_remaining = (estimated_n_articles - n_articles_processed) * avg_time
                     time_remaining = max(time_remaining, 0) # negitve time will throw an error
-                    time_remaining_str = datetime.datetime.fromtimestamp(time_remaining).strftime('%H:%M:%S')
+
+                    # convert to a human readable string
+                    # DD:HH:MM:SS
+                    time_remaining_str = datetime.datetime.fromtimestamp(time_remaining).strftime("%d:%H:%M:%S") + " remaining"
 
                     percentage = n_articles_processed / estimated_n_articles * 100
                     
